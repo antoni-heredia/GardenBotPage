@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="./dist/farmbot_single_file.js"></script>
+<script>
+     function dellllay(ms) {
+        var cur_d = new Date();
+        var cur_ticks = cur_d.getTime();
+        var ms_passed = 0;
+        while(ms_passed < ms) {
+            var d = new Date();  // Possible memory leak?
+            var ticks = d.getTime();
+            ms_passed = ticks - cur_ticks;
+            // d = null;  // Prevent memory leak?
+        }
+    }
+
+function ejecutaPila(ordenes) {
+  if (ordenes.length==0) {
+    return;
+  }
+
+  orden = ordenes.shift();
+
+  if (orden.orden == 'M') {
+    console.log("Mover " + orden.x + " " + orden.y);
+    farmbot123.moveAbsolute({ x: orden.x, y: orden.y, z: 0, speed: 100 }).then(function(ack) {
+      ejecutaPila(ordenes);
+    });
+  } else if (orden.orden == 'G') {
+    console.log("Girar " + orden.angulo);
+
+    farmbot123.setServoAngle({ pin_number: 4,
+      pin_value: orden.angulo
+    }).then(function(xxxx){
+      ejecutaPila(ordenes);
+    });
+  } else {
+    console.log("FOTO");
+    farmbot123.takePhoto({}).then(function(xxxx){
+      ejecutaPila(ordenes);
+    });
+  }
+}
+ 
+ var farmbot123 = new fbjs.Farmbot({ token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1bmtub3duIiwic3ViIjo0NjUwLCJpYXQiOjE1NTA4NDUwNTUsImp0aSI6IjNhNmY2N2RjLTQ4NWYtNGY3MS05YWYwLWVlOWMyMDg1OWJhMyIsImlzcyI6Ii8vbXkuZmFybWJvdC5pbzo0NDMiLCJleHAiOjE1NTQzMDEwNTUsIm1xdHQiOiJicmlzay1iZWFyLnJtcS5jbG91ZGFtcXAuY29tIiwiYm90IjoiZGV2aWNlXzQ2NDciLCJ2aG9zdCI6InZiemN4c3FyIiwibXF0dF93cyI6IndzczovL2JyaXNrLWJlYXIucm1xLmNsb3VkYW1xcC5jb206NDQzL3dzL21xdHQiLCJvc191cGRhdGVfc2VydmVyIjoiaHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9mYXJtYm90L2Zhcm1ib3Rfb3MvcmVsZWFzZXMvbGF0ZXN0IiwiZndfdXBkYXRlX3NlcnZlciI6IkRFUFJFQ0FURUQiLCJpbnRlcmltX2VtYWlsIjoiYS5oZXJlZGlhLmNhc3RpbGxvQGdtYWlsLmNvbSIsImJldGFfb3NfdXBkYXRlX3NlcnZlciI6Imh0dHBzOi8vYXBpLmdpdGh1Yi5jb20vcmVwb3MvRmFybUJvdC9mYXJtYm90X29zL3JlbGVhc2VzLzE0NTgxODcxIn0.lJqgAqn2J54ctMtxWbT1xE0CDDOddIOSb0XjeyKe-eOP5CBZy9jszs3pQ4YbpczQaiZBMeBts3U7RmbSdl8GsaX0mR-DPo08aWF6uGNRnNpc2pB6Q7Kldfs-63_CBrF1IIeqrnwukwwL5bPCGjmxIKKrc0SG4oGOWmLBP17f5MyMnV_2cq5MF2ZGIhAQAZZg3BDtKJptVfJ67S9FNHsvXOqVF9UFiivecSOXnKvrt3xuaL76eJxVjpksEdvjnZGheqCLp5TRgR4wbEcVOKnAhYrf3lqt3ZwpdtuJR8qd1goMHp5FgnUXynOxRQOosJ7ae8px-sP5ybx716FJrBhikA" });
+  function myFunction() {
+    radio =   document.getElementById("radio").value;
+    nlados =   document.getElementById("nlados").value;
+    
+    farmbot123.connect();
+    
+    x0 = 0
+    y0 = 0
+    y = 0;
+    x = radio;
+    alfa = (Math.PI/nlados)
+    //console.log(alfa);
+    lastx = x0
+    lasty = y0
+   /* farmbot123.setServoAngle({ pin_number: 4,
+        pin_value: 30
+    }) ;*/
+
+//    farmbot123.moveAbsolute({x: 0, y: 0, z:100, speed: 100 });
+   ordenes=[];
+
+//    ordenes.push({orden: 'M', x: 0, y: 100});
+//    ordenes.push({orden: 'G', angulo: 45});
+//    ordenes.push({orden: 'F'});
+
+
+    for( i = 0; i <= nlados;i++){
+      console.log(i);
+      angle = alfa * i;
+      incx = -Math.cos(angle) * radio;
+      incy = -Math.sin(angle) * radio;
+      //movX = x*Math.cos(alfa)-y*Math.sin(alfa)
+      //movY = x*Math.sin(alfa)+y*Math.cos(alfa)
+      posx = x0 + incx;
+      posy = y0 + incy;
+      console.log(posx);
+      console.log(posy);
+      anguloCamara = 180 - Math.floor(angle * 180 / Math.PI)
+      console.log(anguloCamara)
+
+      ordenes.push({orden: 'M', x: posx, y: posy});
+    ordenes.push({orden: 'G', angulo: anguloCamara});
+    ordenes.push({orden: 'F'});
+
+      
+
+
+
+            lastx = posx
+      lasty = posy
+
+      //x = movX
+      //y = movY
+    }
+    ordenes.push({orden: 'M', x: x0, y: y0});
+
+    ejecutaPila(ordenes);
+
+    // farmbot123.moveAbsolute({x: lastx - x0, y: lasty - y0, z:0, speed: 100 });
+  
+  }
+</script>
+    </head>
+
+<body>
+
+    Radio:<br>
+    <input type="text" id="radio" value = "200"><br>
+    Nº de fotografias:<br>
+    <input type="text" id="nlados" value ="6">
+    <button onclick="myFunction()">Tomar fotografias</button>
+
+</body>
+
+</html>
